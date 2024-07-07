@@ -11,14 +11,7 @@ import { upload } from "../middlewares/multer.middleware.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
 const router = Router();
 
-router.post(
-  "/register",
-  upload.fields([
-    { name: "avatar", maxCount: 1 },
-    { name: "coverImage", maxCount: 1 },
-  ]),
-  registerUser
-);
+router.post("/register", upload.none(), registerUser);
 
 router.post("/login", upload.none(), loginUser); // upload.none() is used to parse the form data that doesn't contain any files
 
