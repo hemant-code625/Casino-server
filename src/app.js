@@ -15,6 +15,9 @@ app.use(express.urlencoded({ extended: true, limit: "50mb" })); // to parse the 
 app.use(cookieParser()); // to perform crud operations on the browser cookies from server
 
 // Routes imports
+import userRoutes from "./routes/user.routes.js";
+
+app.use("/api/v1/user", userRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running....");
