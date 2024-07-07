@@ -16,8 +16,10 @@ app.use(cookieParser()); // to perform crud operations on the browser cookies fr
 
 // Routes imports
 import userRoutes from "./routes/user.routes.js";
+import gameRoutes from "./routes/game.route.js";
 
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/game", gameRoutes);
 
 app.get("/", (req, res) => {
   res.send("API is running....");
