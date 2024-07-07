@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import User from "../models/user.models.js";
+import User from "../models/user.model.js";
 import { ApiError } from "../utils/ApiError.js";
 
 // asyncHandler is used to catch any unhandled errors thrown by your asynchronous route handlers and pass them to Express's error handling middleware, while `try-catch` blocks inside your route handlers are used to handle specific errors and send custom responses.
