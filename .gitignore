@@ -1,0 +1,32 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Express
+.env
+
+# IDE/Editor specific
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Logs
+logs/
+*.log
+
+# Build output
+dist/
+build/
+
+# Dependency directories
+jspm_packages/
+bower_components/
+
+# Testing
+coverage/
+
+# Operating System Files
+.DS_Store
+Thumbs.db
