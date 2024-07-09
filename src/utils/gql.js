@@ -4,7 +4,6 @@ import { v4 as uuidv4 } from "uuid";
 
 const redis = new Redis();
 
-// GraphQL schema definition
 const typeDefs = gql`
   type Query {
     getGameResults(gameId: String!): GameResult
@@ -17,6 +16,9 @@ const typeDefs = gql`
 
   type GameSession {
     gameId: String
+    mineCount: Int
+    betAmount: Float
+    updatedAt: String
   }
 
   type GameResult {
@@ -26,7 +28,6 @@ const typeDefs = gql`
   }
 `;
 
-// GraphQL resolvers
 const resolvers = {
   Query: {
     getGameResults: async (_, { gameId }) => {
@@ -48,7 +49,7 @@ const resolvers = {
 
       await redis.set(gameId, JSON.stringify(gameData));
 
-      return { gameId };
+      return { gameId, betAmount, mineCount, updatedAt };
     },
     selectTile: async (_, { gameId, position }) => {
       const gameData = await redis.get(gameId);
@@ -70,7 +71,6 @@ const resolvers = {
   },
 };
 
-// Generate minefield with mines placed randomly
 const generateMineField = (mineCount) => {
   const size = 25;
   const mineField = Array(size).fill("G"); // Fill with 'G' for gems initially
@@ -83,7 +83,6 @@ const generateMineField = (mineCount) => {
       placedMines++;
     }
   }
-  console.log("Mine Field: ", mineField);
   return mineField;
 };
 
