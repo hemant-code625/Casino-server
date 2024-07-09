@@ -1,11 +1,27 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+import { ApolloServer } from "apollo-server-express";
+import { typeDefs, resolvers } from "./utils/gql.js";
+
 const app = express();
+const startServer = async () => {
+  const server = new ApolloServer({ typeDefs, resolvers });
+
+  await server.start();
+  server.applyMiddleware({ app });
+
+  app.listen({ port: 4000 }, () =>
+    console.log(`🚀 Server ready at http://localhost:8080${server.graphqlPath}`)
+  );
+};
+
+startServer();
 
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
+    // origin: process.env.CORS_ORIGIN,
+    origin: "*",
     credentials: true,
   })
 );
@@ -16,7 +32,7 @@ app.use(cookieParser()); // to perform crud operations on the browser cookies fr
 
 // Routes imports
 import userRoutes from "./routes/user.routes.js";
-import gameRoutes from "./routes/game.route.js";
+import gameRoutes from "./routes/game.routes.js";
 
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/game", gameRoutes);
