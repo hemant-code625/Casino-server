@@ -11,18 +11,26 @@ const typeDefs = gql`
 
   type Mutation {
     startGame(betAmount: Float!, mineCount: Int!): GameSession
-    selectTile(gameId: String!, position: Int!): GameResult
+    selectTile(gameId: String!, position: Int!): TileResult
   }
 
   type GameSession {
     gameId: String
     mineCount: Int
     betAmount: Float
+    gameOver: Boolean
     updatedAt: String
   }
 
   type GameResult {
+    mineCount: Int
+    betAmount: Float
+    winningAmount: Float
     mineField: [String]
+    updatedAt: String
+  }
+
+  type TileResult {
     isMine: Boolean
     updatedAt: String
   }
@@ -32,7 +40,14 @@ const resolvers = {
   Query: {
     getGameResults: async (_, { gameId }) => {
       const gameData = await redis.get(gameId);
-      return JSON.parse(gameData);
+      const game = JSON.parse(gameData);
+      return {
+        mineCount: game.mineCount,
+        mineField: game.gameOver ? game.mineField : [],
+        betAmount: game.betAmount,
+        winningAmount: game.winningAmount || 0,
+        updatedAt: game.updatedAt,
+      };
     },
   },
   Mutation: {
@@ -44,6 +59,7 @@ const resolvers = {
         mineField,
         betAmount,
         mineCount,
+        gameOver: false,
         updatedAt,
       };
 
@@ -61,9 +77,11 @@ const resolvers = {
       game.updatedAt = updatedAt;
 
       await redis.set(gameId, JSON.stringify(game));
-
+      if (isMine) {
+        game.gameOver = true;
+      }
+      await redis.set(gameId, JSON.stringify(game));
       return {
-        mineField: game.mineField,
         isMine,
         updatedAt,
       };
