@@ -29,6 +29,8 @@ const typeDefs = gql`
     isWinner: Boolean
     rounds: Int
     mineField: [String]
+    multiplier: Float
+    winningAmount: Float
     updatedAt: String
   }
 
@@ -48,9 +50,11 @@ const resolvers = {
         mineCount: game.mineCount,
         mineField: game.gameOver ? game.mineField : [],
         betAmount: game.betAmount,
+        multiplier: game.multiplier,
         isWinner: game.betAmount * game.multiplier > 0 ? true : false,
         rounds: game.isWinner ? game.rounds : game.rounds + 1,
-        // send winning amount instead of multiplier
+        winningAmount:
+          game.multiplier == null ? 0 : game.betAmount * game.multiplier,
         updatedAt: game.updatedAt,
       };
     },
@@ -90,6 +94,7 @@ const resolvers = {
       }
 
       const isMine = game.mineField[position] === "M";
+      const isGem = game.mineField[position] === "G";
       const updatedAt = new Date().toISOString();
       game.isMine = isMine;
       game.updatedAt = updatedAt;
@@ -97,13 +102,17 @@ const resolvers = {
       if (isMine) {
         game.gameOver = true;
         game.isWinner = false;
+        game.multiplier = 0;
+      } else if (
+        isGem &&
+        !game.gameOver &&
+        game.rounds < game.multipliers.length
+      ) {
+        game.multiplier = game.multipliers[game.rounds].payoutMultiplier;
+      } else if (game.gameOver) {
+        throw new Error("Game over. You can't select any more tiles.");
       } else {
-        // Check if game.rounds is within bounds of multipliers array
-        if (game.rounds < game.multipliers.length) {
-          game.multiplier = game.multipliers[game.rounds].payoutMultiplier;
-        } else {
-          throw new Error("Invalid rounds index for multipliers array.");
-        }
+        throw new Error("Invalid rounds index for multipliers array.");
       }
 
       await redis.set(gameId, JSON.stringify(game));
@@ -156,60 +165,14 @@ const generatePayoutMultipliers = (
     safeFields--;
     baseMultiplier += increment;
   }
-
+  // Fill the rest of the fields with 0.0 payout multiplier for mines
+  while (multipliers.length < totalFields) {
+    multipliers.push({
+      field: multipliers.length,
+      payoutMultiplier: 0.0,
+    });
+  }
   return multipliers;
 };
-
-// function simulateGame(
-//   totalFields,
-//   mines,
-//   houseMultiplier,
-//   rounds,
-//   simulations = 1000000
-// ) {
-//   let houseProfit = 0;
-//   let playerProfit = 0;
-
-//   for (let i = 0; i < simulations; i++) {
-//     let multipliers = generatePayoutMultipliers(
-//       totalFields,
-//       mines,
-//       houseMultiplier
-//     );
-//     let betAmount = 1; // Assume a constant bet amount for simplicity
-
-//     let roundProfit = 0;
-//     let gameOver = false;
-
-//     for (let j = 0; j < multipliers.length; j++) {
-//       if (Math.random() < mines / (totalFields - j)) {
-//         // Simulate hitting a mine
-//         roundProfit -= betAmount;
-//         gameOver = true;
-//         break;
-//       } else {
-//         roundProfit += betAmount * (multipliers[j].payoutMultiplier - 1);
-//       }
-//     }
-
-//     houseProfit += gameOver ? betAmount : -roundProfit;
-//     playerProfit += gameOver ? -betAmount : roundProfit;
-//   }
-
-//   return {
-//     houseProfit: houseProfit / simulations,
-//     playerProfit: playerProfit / simulations,
-//   };
-// }
-
-//  Example usage
-// const totalFields = 25;
-// const mines = 3;
-// const houseMultiplier = 0.97;
-// const rounds = generatePayoutMultipliers(totalFields, mines, houseMultiplier);
-// console.log("Payout Multipliers:", rounds);
-// const results = simulateGame(totalFields, mines, houseMultiplier, rounds);
-// console.log("Average House Profit per Game:", results.houseProfit);
-// console.log("Average Player Profit per Game:", results.playerProfit);
 
 export { typeDefs, resolvers };
