@@ -12,6 +12,7 @@ const typeDefs = gql`
   type Mutation {
     startGame(betAmount: Float!, mineCount: Int!): GameSession
     selectTile(gameId: String!, position: Int!): TileResult
+    cashoutResult(gameId: String!): CashoutResult
   }
 
   type GameSession {
@@ -26,8 +27,14 @@ const typeDefs = gql`
   type GameResult {
     mineCount: Int
     betAmount: Float
-    isWinner: Boolean
-    rounds: Int
+    mineField: [String]
+    multiplier: Float
+    winningAmount: Float
+    updatedAt: String
+  }
+  type CashoutResult {
+    mineCount: Int
+    betAmount: Float
     mineField: [String]
     multiplier: Float
     winningAmount: Float
@@ -37,6 +44,7 @@ const typeDefs = gql`
   type TileResult {
     isMine: Boolean
     multiplier: Float
+    winningAmount: Float
     updatedAt: String
   }
 `;
@@ -80,9 +88,33 @@ const resolvers = {
 
       return { gameId, betAmount, mineCount, updatedAt };
     },
+    cashoutResult: async (_, { gameId }) => {
+      const gameData = await redis.get(gameId);
+      const game = JSON.parse(gameData);
+
+      game.gameOver = true;
+      await redis.set(gameId, JSON.stringify(game));
+      return {
+        mineCount: game.mineCount,
+        mineField: game.gameOver ? game.mineField : [],
+        betAmount: game.betAmount,
+        multiplier: game.multiplier,
+        isWinner: game.betAmount * game.multiplier > 0 ? true : false,
+        rounds: game.isWinner ? game.rounds : game.rounds + 1,
+        winningAmount:
+          game.multiplier == null ? 0 : game.betAmount * game.multiplier,
+        updatedAt: game.updatedAt,
+      };
+    },
     selectTile: async (_, { gameId, position }) => {
       const gameData = await redis.get(gameId);
       const game = JSON.parse(gameData);
+
+      if (game.gameOver) {
+        return {
+          multiplier: game.multiplier,
+        };
+      }
 
       if (!Array.isArray(game.positionSelected)) {
         game.positionSelected = [];
@@ -103,12 +135,14 @@ const resolvers = {
         game.gameOver = true;
         game.isWinner = false;
         game.multiplier = 0;
+        game.winningAmount = 0;
       } else if (
         isGem &&
         !game.gameOver &&
         game.rounds < game.multipliers.length
       ) {
         game.multiplier = game.multipliers[game.rounds].payoutMultiplier;
+        game.winningAmount = game.betAmount * game.multiplier;
       } else if (game.gameOver) {
         throw new Error("Game over. You can't select any more tiles.");
       } else {
@@ -120,6 +154,7 @@ const resolvers = {
       return {
         isMine,
         multiplier: game.multiplier,
+        winningAmount: game.winningAmount,
         updatedAt,
       };
     },
