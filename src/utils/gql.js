@@ -69,6 +69,9 @@ const resolvers = {
   },
   Mutation: {
     startGame: async (_, { betAmount, mineCount }) => {
+      if (betAmount < 0) {
+        throw new Error("Please enter a valid betting amount");
+      }
       const gameId = uuidv4();
       const mineField = generateMineField(mineCount);
       const multiplierArray = generatePayoutMultipliers(25, mineCount, 0.98);
