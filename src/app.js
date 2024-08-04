@@ -12,7 +12,7 @@ const startServer = async () => {
   server.applyMiddleware({ app });
 
   app.listen({ port: 4000 }, () =>
-    console.log(`🚀 Server ready at http://localhost:8080${server.graphqlPath}`)
+    console.log(`🚀 Server ready at ${process.env.API + server.graphqlPath}`)
   );
 };
 
@@ -20,8 +20,7 @@ startServer();
 
 app.use(
   cors({
-    // origin: process.env.CORS_ORIGIN,
-    origin: "*",
+    origin: process.env.CORS_ORIGIN,
     credentials: true,
   })
 );
@@ -38,7 +37,7 @@ app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/game", gameRoutes);
 
 app.get("/", (req, res) => {
-  res.send("API is running....");
+  res.send("Server is live 🚀 Checkout: https://casino-client.vercel.app");
 });
 
 export { app };
