@@ -2,10 +2,6 @@ import mongoose from "mongoose";
 
 const MineGameSchema = new mongoose.Schema(
   {
-    gameId: {
-      type: String,
-      required: true,
-    },
     mineField: {
       type: [String],
       required: true,

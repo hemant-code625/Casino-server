@@ -1,8 +1,6 @@
 import { gql } from "apollo-server-express";
-import Redis from "ioredis";
-import { v4 as uuidv4 } from "uuid";
-
-const redis = new Redis();
+// import { v4 as uuidv4 } from "uuid";
+import MineGameModel from "../models/minegame.model.js";
 
 const typeDefs = gql`
   type Query {
@@ -52,15 +50,15 @@ const typeDefs = gql`
 const resolvers = {
   Query: {
     getGameResults: async (_, { gameId }) => {
-      const gameData = await redis.get(gameId);
-      const game = JSON.parse(gameData);
+      const game = await MineGameModel.findById(gameId);
+      if (!game) {
+        throw new Error("Game not found");
+      }
       return {
         mineCount: game.mineCount,
         mineField: game.gameOver ? game.mineField : [],
         betAmount: game.betAmount,
         multiplier: game.multiplier,
-        isWinner: game.betAmount * game.multiplier > 0 ? true : false,
-        rounds: game.isWinner ? game.rounds : game.rounds + 1,
         winningAmount:
           game.multiplier == null ? 0 : game.betAmount * game.multiplier,
         updatedAt: game.updatedAt,
@@ -72,11 +70,12 @@ const resolvers = {
       if (betAmount < 0) {
         throw new Error("Please enter a valid betting amount");
       }
-      const gameId = uuidv4();
+      // const gameId = uuidv4();
       const mineField = generateMineField(mineCount);
       const multiplierArray = generatePayoutMultipliers(25, mineCount, 0.98);
       const updatedAt = new Date().toISOString();
       const gameData = {
+        // gameId,
         mineField,
         betAmount,
         mineCount,
@@ -86,32 +85,35 @@ const resolvers = {
         multipliers: multiplierArray,
         updatedAt,
       };
-
-      await redis.set(gameId, JSON.stringify(gameData));
-
+      const newGame = new MineGameModel(gameData);
+      await newGame.save();
+      const gameId = newGame._id;
       return { gameId, betAmount, mineCount, updatedAt };
     },
     cashoutResult: async (_, { gameId }) => {
-      const gameData = await redis.get(gameId);
-      const game = JSON.parse(gameData);
+      const game = await MineGameModel.findById(gameId);
+      if (!game) {
+        throw new Error("Game not found");
+      }
 
       game.gameOver = true;
-      await redis.set(gameId, JSON.stringify(game));
+      await game.save({ validateBeforeSave: false });
+
       return {
         mineCount: game.mineCount,
         mineField: game.gameOver ? game.mineField : [],
         betAmount: game.betAmount,
         multiplier: game.multiplier,
-        isWinner: game.betAmount * game.multiplier > 0 ? true : false,
-        rounds: game.isWinner ? game.rounds : game.rounds + 1,
         winningAmount:
           game.multiplier == null ? 0 : game.betAmount * game.multiplier,
         updatedAt: game.updatedAt,
       };
     },
     selectTile: async (_, { gameId, position }) => {
-      const gameData = await redis.get(gameId);
-      const game = JSON.parse(gameData);
+      const game = await MineGameModel.findById(gameId);
+      if (!game) {
+        throw new Error("Game not found");
+      }
 
       if (game.gameOver) {
         return {
@@ -152,7 +154,7 @@ const resolvers = {
         throw new Error("Invalid rounds index for multipliers array.");
       }
 
-      await redis.set(gameId, JSON.stringify(game));
+      await game.save({ validateBeforeSave: false });
 
       return {
         isMine,
@@ -164,7 +166,7 @@ const resolvers = {
   },
 };
 
-const generateMineField = (mineCount) => {
+export const generateMineField = (mineCount) => {
   const size = 25;
   const mineField = Array(size).fill("G"); // Fill with 'G' for gems initially
 
@@ -179,7 +181,7 @@ const generateMineField = (mineCount) => {
   return mineField;
 };
 
-const generatePayoutMultipliers = (
+export const generatePayoutMultipliers = (
   totalFields,
   mines,
   houseMultiplier = 0.98
