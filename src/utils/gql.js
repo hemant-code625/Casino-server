@@ -72,7 +72,7 @@ const resolvers = {
       // const gameId = uuidv4();
       const mineField = generateMineField(mineCount);
       const multiplierArray = generatePayoutMultipliers(25, mineCount, 0.98);
-      const updatedAt = new Date().toISOString();
+      const updatedAt = new Date();
       const expireAt = new Date(updatedAt.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
       const gameData = {
         // gameId,
