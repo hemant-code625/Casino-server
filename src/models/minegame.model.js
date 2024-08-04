@@ -33,16 +33,22 @@ const MineGameSchema = new mongoose.Schema(
       ],
       required: true,
     },
-
     isMine: {
       type: Boolean,
     },
     multiplier: {
       type: Number,
     },
+    expireAt: {
+      type: Date,
+      required: true,
+    },
   },
   { timestamps: true }
 );
+
+// Create a TTL index on the expireAt field
+MineGameSchema.index({ expireAt: 1 }, { expireAfterSeconds: 0 });
 
 const MineGameModel = mongoose.model("MineGame", MineGameSchema);
 

@@ -1,5 +1,4 @@
 import { gql } from "apollo-server-express";
-// import { v4 as uuidv4 } from "uuid";
 import MineGameModel from "../models/minegame.model.js";
 
 const typeDefs = gql`
@@ -74,6 +73,7 @@ const resolvers = {
       const mineField = generateMineField(mineCount);
       const multiplierArray = generatePayoutMultipliers(25, mineCount, 0.98);
       const updatedAt = new Date().toISOString();
+      const expireAt = new Date(updatedAt.getTime() + 24 * 60 * 60 * 1000); // 24 hours from now
       const gameData = {
         // gameId,
         mineField,
@@ -84,6 +84,7 @@ const resolvers = {
         positionSelected: [],
         multipliers: multiplierArray,
         updatedAt,
+        expireAt,
       };
       const newGame = new MineGameModel(gameData);
       await newGame.save();
