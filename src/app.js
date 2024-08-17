@@ -20,9 +20,11 @@ app.use(cookieParser());
 // Routes imports
 import userRoutes from "./routes/user.routes.js";
 import gameRoutes from "./routes/game.routes.js";
+import paymentRouter from "./routes/payment.routes.js";
 
 app.use("/api/v1/user", userRoutes);
 app.use("/api/v1/game", gameRoutes);
+app.use("/api/v1/payment", paymentRouter);
 
 app.get("/", (req, res) => {
   res.send("Server is live 🚀 Checkout: https://casino-client.vercel.app");
