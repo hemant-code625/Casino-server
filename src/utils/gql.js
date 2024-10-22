@@ -217,3 +217,54 @@ export const generatePayoutMultipliers = (
 };
 
 export { typeDefs, resolvers };
+
+// function simulateGame(
+//   totalFields,
+//   mines,
+//   houseMultiplier,
+//   rounds,
+//   simulations = 1000000
+// ) {
+//   let houseProfit = 0;
+//   let playerProfit = 0;
+
+//   for (let i = 0; i < simulations; i++) {
+//     let multipliers = generatePayoutMultipliers(
+//       totalFields,
+//       mines,
+//       houseMultiplier
+//     );
+//     let betAmount = 1; // Assume a constant bet amount for simplicity
+
+//     let roundProfit = 0;
+//     let gameOver = false;
+
+//     for (let j = 0; j < multipliers.length; j++) {
+//       if (Math.random() < mines / (totalFields - j)) {
+//         // Simulate hitting a mine
+//         roundProfit -= betAmount;
+//         gameOver = true;
+//         break;
+//       } else {
+//         roundProfit += betAmount * (multipliers[j].payoutMultiplier - 1);
+//       }
+//     }
+
+//     houseProfit += gameOver ? betAmount : -roundProfit;
+//     playerProfit += gameOver ? -betAmount : roundProfit;
+//   }
+
+//   return {
+//     houseProfit: houseProfit / simulations,
+//     playerProfit: playerProfit / simulations,
+//   };
+// }
+
+// const totalFields = 25;
+// const mines = 3;
+// const houseMultiplier = 0.97;
+// const rounds = generatePayoutMultipliers(totalFields, mines, houseMultiplier);
+// console.log("Payout Multipliers:", rounds);
+// const results = simulateGame(totalFields, mines, houseMultiplier, rounds);
+// console.log("Average House Profit per Game:", results.houseProfit);
+// console.log("Average Player Profit per Game:", results.playerProfit);

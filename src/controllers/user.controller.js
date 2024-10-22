@@ -5,12 +5,12 @@ import ApiResponse from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 
 export const registerUser = asyncHandler(async (req, res) => {
-  const { username, email, password } = req.body;
+  const { email, password } = req.body;
 
-  if (![username, email, password].every(Boolean)) {
+  if (![email, password].every(Boolean)) {
     return res
       .status(400)
-      .json(new ApiError(400, "Please fill all the fields"));
+      .json(new ApiError(400, "Email and Password is required"));
   }
 
   if (!email.includes("@")) {
@@ -21,9 +21,9 @@ export const registerUser = asyncHandler(async (req, res) => {
 
   const existedUser = await User.findOne({ email }).lean();
   if (existedUser) {
-    return res.status(402).json(new ApiError(402, "User already exists"));
+    return res.status(402).json(new ApiError(402, "User already exists!"));
   }
-
+  const username = email.split("@")[0];
   const user = await User.create({
     email,
     password,
