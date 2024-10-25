@@ -27,7 +27,7 @@ app.use("/api/v1/game", gameRoutes);
 app.use("/api/v1/payment", paymentRouter);
 
 app.get("/", (req, res) => {
-  res.send("Server is live 🚀 Checkout: https://casino-client.vercel.app");
+  res.send("Server is live 🚀 Checkout: https://amingoo.vercel.app");
 });
 
 const startServer = async () => {

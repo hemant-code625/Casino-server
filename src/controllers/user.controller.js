@@ -197,6 +197,32 @@ export const changeCurrentPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Password updated successfully", {}));
 });
 
+export const saveBankDetails = asyncHandler(async (req, res) => {
+  // valid user will be checked by the auth middleware
+  // get the bank details from the req.body
+  // save the bank details to the user
+  // return the updated user
+  const { mobileNumber, ifsc, accountNumber, beneficiaryName } = req.body;
+  if (![mobileNumber, ifsc, accountNumber, beneficiaryName].every(Boolean)) {
+    return res.status(400).json(new ApiError(400, "All fields are required"));
+  }
+  const user = await User.findById(req.user?._id);
+  if (!user) {
+    return res
+      .status(401)
+      .json(new ApiError(401, "User not found! Please login again"));
+  }
+  user.mobileNumber = mobileNumber;
+  user.ifsc = ifsc;
+  user.accountNumber = accountNumber;
+  user.beneficiaryName = beneficiaryName;
+  user.save({ validateBeforeSave: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Bank details saved successfully"));
+});
+
 export const getUser = asyncHandler(async (req, res) => {
   return res
     .status(200)

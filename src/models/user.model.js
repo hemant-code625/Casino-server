@@ -21,6 +21,18 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
     },
+    mobileNumber: {
+      type: String,
+    },
+    accountNumber: {
+      type: String,
+    },
+    ifsc: {
+      type: String,
+    },
+    beneficiaryName: {
+      type: String,
+    },
     refreshToken: {
       type: String,
     },

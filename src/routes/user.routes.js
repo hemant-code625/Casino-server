@@ -5,6 +5,7 @@ import {
   loginUser,
   logOutUser,
   registerUser,
+  saveBankDetails,
   updateRefreshToken,
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middleware.js";
@@ -17,6 +18,8 @@ router.post("/login", upload.none(), loginUser); // upload.none() is used to par
 
 router.post("/logout", verifyJWT, logOutUser);
 router.post("/refresh-token", updateRefreshToken);
+
+router.post("/save-bank-details", verifyJWT, saveBankDetails);
 
 router.post("/change-password", verifyJWT, changeCurrentPassword);
 router.post("/user", verifyJWT, getUser);
