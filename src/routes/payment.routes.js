@@ -2,12 +2,15 @@ import { Router } from "express";
 import {
   createOrder,
   createPayout,
+  isBankAccountAdded,
   verifyPayment,
 } from "../controllers/payment.controller.js";
-const router = Router();
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 
+const router = Router();
+router.post("/verify-bank-details", verifyJWT, isBankAccountAdded);
 router.post("/create-order", createOrder);
-router.post("/verify-payment", verifyPayment);
+router.post("/verify-payment", verifyJWT, verifyPayment);
 router.post("/withdraw", createPayout);
 
 export default router;

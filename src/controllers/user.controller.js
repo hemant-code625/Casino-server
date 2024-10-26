@@ -226,5 +226,11 @@ export const saveBankDetails = asyncHandler(async (req, res) => {
 export const getUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
-    .json(new ApiResponse(200, req.user, "User fetched successfully"));
+    .json(new ApiResponse(200, "User fetched successfully", req.user));
+});
+
+export const getWalletAmount = asyncHandler(async (req, res) => {
+  return res
+    .status(200)
+    .json(new ApiResponse(200, "Wallet amount fetched", req.user.wallet));
 });

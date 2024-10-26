@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   changeCurrentPassword,
   getUser,
+  getWalletAmount,
   loginUser,
   logOutUser,
   registerUser,
@@ -23,5 +24,5 @@ router.post("/save-bank-details", verifyJWT, saveBankDetails);
 
 router.post("/change-password", verifyJWT, changeCurrentPassword);
 router.post("/user", verifyJWT, getUser);
-
+router.post("/wallet", verifyJWT, getWalletAmount);
 export default router;

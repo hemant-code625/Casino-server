@@ -24,6 +24,10 @@ const userSchema = new mongoose.Schema(
     mobileNumber: {
       type: String,
     },
+    wallet: {
+      type: Number,
+      default: 0,
+    },
     accountNumber: {
       type: String,
     },

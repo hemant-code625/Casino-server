@@ -30,7 +30,7 @@ export const createOrder = async (req, res) => {
 
 //  Verify the payment signature
 export const verifyPayment = async (req, res) => {
-  const { payment_id, order_id, signature } = req.body;
+  const { payment_id, order_id, signature, amount } = req.body;
 
   const secret = process.env.RAZORPAY_KEY_SECRET;
   const generated_signature = crypto
@@ -39,10 +39,32 @@ export const verifyPayment = async (req, res) => {
     .digest("hex");
 
   if (generated_signature === signature) {
+    // Add the amount to the user's wallet
+    const user = req.user;
+    user.wallet += amount;
+    user.save({ validateBeforeSave: false });
+
     res.json({ success: true });
   } else {
     res.status(400).json({ success: false });
   }
+};
+
+export const isBankAccountAdded = async (req, res) => {
+  // Check if the user has added a bank account
+  // If the user has not added a bank account, then return false
+  const user = req.user;
+  if (
+    ![
+      user.accountNumber,
+      user.ifsc,
+      user.beneficiaryName,
+      user.mobileNumber,
+    ].every(Boolean)
+  ) {
+    return res.json({ added: false });
+  }
+  return res.json({ added: true });
 };
 
 // To withdraw money from the user's wallet
